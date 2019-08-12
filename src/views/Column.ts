@@ -30,12 +30,26 @@ export class Column {
 
     public getName(): string {
         let index: number = 0;
-        let name: string = this.name;
-        while (index !== -1) {
-            index = name.indexOf('_');
-            const newChar = name.charAt(index + 1);
-            name = name.replace('_' + newChar, newChar.toUpperCase());
+        let name: string = '';
+        if (this.name.toLowerCase().includes('id')) {
+            this.name.split('_')
+                .filter((word) => word !== 'id')
+                .forEach((word, index) => {
+                    if (index !== 0) {
+                        word = word.replace(word.charAt(0), word.charAt(0).toUpperCase());
+                    }
+                    name += word;
+                });
+            name += 'Id';
+        } else {
+            name = this.name;
+            while (index !== -1) {
+                index = name.indexOf('_');
+                const newChar = name.charAt(index + 1);
+                name = name.replace('_' + newChar, newChar.toUpperCase());
+            }
         }
+
         return name;
     }
 
