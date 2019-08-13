@@ -1,9 +1,9 @@
 export class Column {
 
-    private name: string;
-    private type: string;
-    private nullable: boolean;
-    private defaultValue: string | boolean;
+    private readonly name: string;
+    private readonly type: string;
+    private readonly nullable: boolean;
+    private readonly defaultValue: string | boolean;
 
     constructor(name: string, type: string, nullable: boolean, defaultValue: string | boolean) {
         this.name = name;
