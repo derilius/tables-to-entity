@@ -1,29 +1,50 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/converter">Converter</router-link>
+    <div id="app">
+        <v-toolbar
+                :collapse="collapse"
+                :src="'https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg'"
+        >
+
+            <v-toolbar-title style="color: white">VueApp</v-toolbar-title>
+
+            <v-spacer></v-spacer>
+
+            <v-toolbar-items>
+                <v-btn dark text to="/">Home</v-btn>
+                <v-btn dark text to="/converter">Converter</v-btn>
+            </v-toolbar-items>
+
+            <!--            <template v-if="$vuetify.breakpoint.smAndUp">-->
+            <!--                <v-btn dark icon>-->
+            <!--                    <v-icon>mdi-export-variant</v-icon>-->
+            <!--                </v-btn>-->
+            <!--                <v-btn dark icon>-->
+            <!--                    <v-icon>mdi-delete-circle</v-icon>-->
+            <!--                </v-btn>-->
+            <!--                <v-btn dark icon>-->
+            <!--                    <v-icon>mdi-plus-circle</v-icon>-->
+            <!--                </v-btn>-->
+            <!--            </template>-->
+        </v-toolbar>
+
+        <router-view/>
     </div>
-    <router-view/>
-  </div>
 </template>
 
 <style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
+
+    html {
+        overflow-y: auto !important;
     }
-  }
-}
+
+    #app {
+        font-family: 'Avenir', Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: center;
+        color: #2c3e50;
+        background-color: #ebeef7;
+        height: 100vh;
+    }
+
 </style>

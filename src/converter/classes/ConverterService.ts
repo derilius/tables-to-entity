@@ -1,4 +1,7 @@
-import {Column} from '@/converter/Column';
+import {Column} from '@/converter/classes/Column';
+import SourceDataType from '@/converter/classes/SourceDataType';
+import {DataTypeEnum} from '@/converter/classes/DataTypeEnum';
+import ResultDataType from '@/converter/classes/ResultDataType';
 
 export default class ConverterService {
 
@@ -9,6 +12,18 @@ export default class ConverterService {
         const columns: Column[] = this.getColumns(text);
         console.log(columns);
         return this.buildOutput(tableName, className, columns);
+    }
+
+    public getSources(): SourceDataType[] {
+        return Array(
+            new SourceDataType('MySql', DataTypeEnum.MY),
+        );
+    }
+
+    public getResults() {
+        return Array(
+            new ResultDataType('Java(Spring)', DataTypeEnum.SPRING),
+        );
     }
 
     private buildOutput(tableName: string, className: string, columns: Column[]): string {
@@ -48,6 +63,7 @@ export default class ConverterService {
 
     private getColumns(text: string[]): Column[] {
         return text.filter((l, i) => i !== 0)
+            .filter((line) => !line.includes('primary key'))
             .map((line) => {
                 const lineArray: string[] = line.trimStart().split(' ');
                 console.log(lineArray);
@@ -69,7 +85,7 @@ export default class ConverterService {
             return 'boolean';
         } else if (type.startsWith('decimal')) {
             return 'BigDecimal';
-        } else if (type.startsWith('varchar')) {
+        } else if (type.startsWith('varchar') || type.startsWith('text') || type.includes('text')) {
             return 'String';
         } else if (type.startsWith('datetime')) {
             return 'OffsetDateTime';

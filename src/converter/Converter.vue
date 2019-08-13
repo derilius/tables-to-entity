@@ -1,13 +1,18 @@
 <template>
 
-    <div class="h-100">
+    <div class="h-100" style="padding-top: 20px">
         <h1>Convert DDL to JavaEntityClass</h1>
 
         <div class="flex-container style-container">
             <div class="h-100 col-5">
+                <RadioPicker
+                        :values="getSources()"
+                        @change="onChangedSource"
+                ></RadioPicker>
                 <v-textarea
                         solo
                         auto-grow
+                        rows="25"
                         name="input-7-4"
                         label="Please enter a database code"
                         v-model="input"
@@ -26,10 +31,15 @@
             </div>
 
             <div class="h-100 col-5">
+                <RadioPicker
+                        :values="getResults()"
+                        @change="onChangedResult"
+                ></RadioPicker>
                 <v-textarea
                         solo
                         auto-grow
                         readonly
+                        rows="25"
                         name="input-7-4"
                         label="Wait for it..."
                         v-model="output"
@@ -42,11 +52,13 @@
 </template>
 
 <script lang="ts">
-    import Vue from 'vue';
-    import Component from 'vue-class-component';
-    import ConverterService from '@/converter/ConverterService';
+    import {Component, Vue} from 'vue-property-decorator';
+    import ConverterService from './classes/ConverterService';
+    import RadioPicker from './components/RadioPicker.vue';
+    import SourceDataType from '@/converter/classes/SourceDataType';
+    import ResultDataType from '@/converter/classes/ResultDataType';
 
-    @Component
+    @Component({components: {RadioPicker}})
     export default class Converter extends Vue {
 
         public input: string = '';
@@ -57,6 +69,23 @@
         public generate(): void {
             this.output = this.converterService.generate(this.input, this.className);
         }
+
+        public onChangedSource(sourceType: string): void {
+            console.log('Changed source type to: ' + sourceType);
+        }
+
+        public onChangedResult(resultType: string): void {
+            console.log('Changed result type to: ' + resultType);
+        }
+
+        public getSources(): SourceDataType[] {
+            return this.converterService.getSources();
+        }
+
+        public getResults(): ResultDataType[] {
+            return this.converterService.getResults();
+        }
+
     }
 
 </script>
@@ -80,7 +109,6 @@
     .style-container {
         border-radius: 10px 10px 10px 10px;
         border: 0 solid #000000;
-        background-color: #ebeef7;
     }
 
     textarea {
