@@ -4,12 +4,18 @@ export class Column {
     private readonly type: string;
     private readonly nullable: boolean;
     private readonly defaultValue: string | boolean;
+    private constructorField: boolean;
 
     constructor(name: string, type: string, nullable: boolean, defaultValue: string | boolean) {
         this.name = name;
         this.type = type;
         this.nullable = nullable;
         this.defaultValue = defaultValue;
+        this.constructorField = !nullable;
+    }
+
+    public addToConstructor() {
+        this.constructorField = !this.constructorField;
     }
 
     public getColumnName(): string {

@@ -2,16 +2,24 @@ import {Column} from '@/converter/classes/Column';
 import SourceDataType from '@/converter/classes/SourceDataType';
 import {DataTypeEnum} from '@/converter/classes/DataTypeEnum';
 import ResultDataType from '@/converter/classes/ResultDataType';
+import AClass from '@/converter/classes/AClass';
 
 export default class ConverterService {
 
-    public generate(input: string, className: string): string {
+    public readInput(input: string, className: string): AClass {
         input = input.replace(/  +/g, ' ');
         const text: string[] = input.toLowerCase().split('\n');
         const tableName = this.extractTableName(text[0]);
         const columns: Column[] = this.getColumns(text);
         console.log(columns);
-        return this.buildOutput(tableName, className, columns);
+        return new AClass(className, columns, tableName);
+    }
+
+    public generate(aClass: AClass | null): string {
+        if (aClass != null) {
+            return this.buildOutput(aClass);
+        }
+        return '';
     }
 
     public getSources(): SourceDataType[] {
@@ -26,16 +34,16 @@ export default class ConverterService {
         );
     }
 
-    private buildOutput(tableName: string, className: string, columns: Column[]): string {
+    private buildOutput(aClass: AClass): string {
         let text: string = '' +
             '@Getter\n' +
             '@NoArgsConstructor\n' +
             '@Entity\n' +
-            `@Table(name = \"${tableName}\")\n` +
-            `public class ${className} {\n` +
+            `@Table(name = \"${aClass.getTableName()}\")\n` +
+            `public class ${aClass.getClassName()} {\n` +
             '\n';
 
-        columns.forEach((column, index) => {
+        aClass.getColumns().forEach((column, index) => {
             if (index === 0) {
                 text += '' +
                     '@Id\n' +
