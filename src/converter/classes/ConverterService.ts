@@ -6,13 +6,13 @@ import AClass from '@/converter/classes/AClass';
 
 export default class ConverterService {
 
-    public readInput(input: string, className: string): AClass {
+    public readInput(input: string): AClass {
         input = input.replace(/  +/g, ' ');
         const text: string[] = input.toLowerCase().split('\n');
         const tableName = this.extractTableName(text[0]);
         const columns: Column[] = this.getColumns(text);
         console.log(columns);
-        return new AClass(className, columns, tableName);
+        return new AClass(columns, tableName);
     }
 
     public generate(aClass: AClass | null): string {
@@ -46,16 +46,25 @@ export default class ConverterService {
         aClass.getColumns().forEach((column, index) => {
             if (index === 0) {
                 text += '' +
-                    '@Id\n' +
-                    `@Column(name = \"${column.getColumnName()}\")\n` +
-                    '@GeneratedValue(strategy = GenerationType.IDENTITY)\n' +
-                    'private Long id;\n\n';
+                    '\t@Id\n' +
+                    `\t@Column(name = \"${column.getColumnName()}\")\n` +
+                    '\t@GeneratedValue(strategy = GenerationType.IDENTITY)\n' +
+                    '\tprivate Long id;\n\n';
             } else {
                 text += '' +
-                    `@Column(name = \"${column.getColumnName()}\"${column.checkNullable()})\n` +
-                    `private ${column.getType()} ${column.getName()}${column.getDefault()};\n\n`;
+                    `\t@Column(name = \"${column.getColumnName()}\"${column.checkNullable()})\n` +
+                    `\tprivate ${column.getType()} ${column.getName()}${column.getDefault()};\n\n`;
             }
         });
+
+
+        text += `\tpublic ${aClass.getClassName()} (Object object) {\n`;
+        aClass.getColumns()
+            .filter((column) => column.isConstructorField())
+            .forEach((column) => {
+                text += `\t\tthis.${column.getName()} = ${column.isHaveDefault() ? column.resolveDefaultType() : 'object.get' + column.generateGetter()};\n`;
+            });
+        text += '\t}\n\n';
         text += '}';
         return text;
     }
@@ -71,7 +80,7 @@ export default class ConverterService {
 
     private getColumns(text: string[]): Column[] {
         return text.filter((l, i) => i !== 0)
-            .filter((line) => !line.includes('primary key'))
+            // .filter((line) => !line.includes('primary key'))
             .map((line) => {
                 const lineArray: string[] = line.trimStart().split(' ');
                 console.log(lineArray);

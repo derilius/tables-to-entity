@@ -1,7 +1,6 @@
 <template>
     <div id="app">
         <v-toolbar
-                :collapse="collapse"
                 :src="'https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg'"
         >
 
@@ -14,17 +13,6 @@
                 <v-btn dark text to="/converter">Converter</v-btn>
             </v-toolbar-items>
 
-            <!--            <template v-if="$vuetify.breakpoint.smAndUp">-->
-            <!--                <v-btn dark icon>-->
-            <!--                    <v-icon>mdi-export-variant</v-icon>-->
-            <!--                </v-btn>-->
-            <!--                <v-btn dark icon>-->
-            <!--                    <v-icon>mdi-delete-circle</v-icon>-->
-            <!--                </v-btn>-->
-            <!--                <v-btn dark icon>-->
-            <!--                    <v-icon>mdi-plus-circle</v-icon>-->
-            <!--                </v-btn>-->
-            <!--            </template>-->
         </v-toolbar>
 
         <router-view/>

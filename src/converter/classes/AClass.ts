@@ -6,8 +6,8 @@ export default class AClass {
     private columns: Column[];
     private tableName: string;
 
-    constructor(className: string, columns: Column[], tableName: string) {
-        this.className = className;
+    constructor(columns: Column[], tableName: string) {
+        this.className = '';
         this.columns = columns;
         this.tableName = tableName;
     }
@@ -22,6 +22,10 @@ export default class AClass {
 
     public getTableName(): string {
         return this.tableName;
+    }
+
+    public setClassName(className: string) {
+        this.className = className;
     }
 
 }

@@ -18,6 +18,10 @@ export class Column {
         this.constructorField = !this.constructorField;
     }
 
+    public isConstructorField(): boolean {
+        return this.constructorField;
+    }
+
     public getColumnName(): string {
         return this.name;
     }
@@ -26,12 +30,25 @@ export class Column {
         return this.type;
     }
 
+    public isHaveDefault(): boolean {
+        return !!this.defaultValue;
+    }
+
     public getDefault(): string {
         return this.defaultValue === false ? '' : ' = ' + this.resolveDefaultType();
     }
 
+    public isNullable(): boolean {
+        return this.nullable;
+    }
+
     public checkNullable(): string {
         return this.nullable ? '' : ', nullable = false';
+    }
+
+    public generateGetter(): string {
+        const name = this.getName();
+        return this.getName().charAt(0).toUpperCase() + name.substring(1) + '()';
     }
 
     public getName(): string {
@@ -59,7 +76,7 @@ export class Column {
         return name;
     }
 
-    private resolveDefaultType(): string {
+    public resolveDefaultType(): string {
         switch (this.type) {
             case 'boolean':
                 return this.defaultValue === '1' ? 'true' : 'false';

@@ -20,8 +20,7 @@
             </div>
 
             <div class="h-100 col-2">
-                <v-btn @click="readInput"
-                       :disabled="!className.trim().length > 0">
+                <v-btn @click="readInput">
                     Read input
                 </v-btn>
                 <v-btn @click="generate"
@@ -32,7 +31,13 @@
                         v-model="className"
                         label="Class name"
                 ></v-text-field>
-                <v-checkbox v-for="column in aClass.getColumns()" v-model="column.constructorField" @change="column.addToConstructor()" :label="column.getName()"></v-checkbox>
+
+                <div class="fieldset--checkbox" v-for="(column, index) in aClass.getColumns()" v-model="column.constructorField"
+                     @change="column.addToConstructor()">
+                    <input :id="index" type="checkbox" :v-model="column.isConstructorField()" :checked="column.isConstructorField()" :disabled="index === 0 || !column.isNullable()">
+                    <label :for="index" class="input--label">{{column.getName()}}</label>
+                </div>
+
             </div>
 
             <div class="h-100 col-5">
@@ -72,13 +77,14 @@
         public className: string = '';
 
         private converterService: ConverterService = new ConverterService();
-        private aClass: AClass | null = new AClass('', [], '');
+        private aClass: AClass = new AClass([], '');
 
         public readInput(): void {
-            this.aClass = this.converterService.readInput(this.input, this.className);
+            this.aClass = this.converterService.readInput(this.input);
         }
 
         public generate(): void {
+            this.aClass.setClassName(this.className);
             this.output = this.converterService.generate(this.aClass);
         }
 
@@ -125,6 +131,20 @@
 
     textarea {
         resize: none;
+    }
+
+    input {
+        margin-right: 8px;
+    }
+
+    .input--label {
+        letter-spacing: .9px;
+        color: #6d6d6d;
+    }
+
+    .fieldset--checkbox {
+        padding-bottom: 10px;
+        text-align: left;
     }
 
 </style>
