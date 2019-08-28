@@ -1,21 +1,23 @@
-import {Column} from '@/converter/classes/Column';
 import SourceDataType from '@/converter/classes/SourceDataType';
 import {DataTypeEnum} from '@/converter/classes/DataTypeEnum';
 import ResultDataType from '@/converter/classes/ResultDataType';
-import AClass from '@/converter/classes/AClass';
+import AbstractClass from '@/converter/classes/AbstractClass';
+import {JavaColumn} from '@/converter/classes/JavaColumn';
+import JavaClass from '@/converter/classes/JavaClass';
 
 export default class ConverterService {
 
-    public readInput(input: string): AClass {
-        input = input.replace(/  +/g, ' ');
-        const text: string[] = input.toLowerCase().split('\n');
-        const tableName = this.extractTableName(text[0]);
-        const columns: Column[] = this.getColumns(text);
-        console.log(columns);
-        return new AClass(columns, tableName);
+    public readInput(input: string, inputType: DataTypeEnum): AbstractClass {
+        input = input.toLowerCase();
+        const regex = /.*(,|\s*\))/g;
+        const lines: RegExpMatchArray | null = input.match(regex);
+        const tableName = this.extractTableName(input);
+        const columns: JavaColumn[] = this.getColumns(lines);
+        columns.forEach((c) => console.log(c.toString()));
+        return new JavaClass(columns, tableName);
     }
 
-    public generate(aClass: AClass | null): string {
+    public generate(aClass: AbstractClass | null): string {
         if (aClass != null) {
             return this.buildOutput(aClass);
         }
@@ -24,7 +26,8 @@ export default class ConverterService {
 
     public getSources(): SourceDataType[] {
         return Array(
-            new SourceDataType('MySql', DataTypeEnum.MY),
+            new SourceDataType('MySQL', DataTypeEnum.MY),
+            new SourceDataType('PostgreSQL', DataTypeEnum.PG),
         );
     }
 
@@ -34,9 +37,9 @@ export default class ConverterService {
         );
     }
 
-    private buildOutput(aClass: AClass): string {
+    private buildOutput(aClass: AbstractClass): string {
         let text: string = '' +
-            '@Getter\n' +
+            '@Getter\n' +   //todo: refactor adnotacji
             '@NoArgsConstructor\n' +
             '@Entity\n' +
             `@Table(name = \"${aClass.getTableName()}\")\n` +
@@ -44,59 +47,50 @@ export default class ConverterService {
             '\n';
 
         aClass.getColumns().forEach((column, index) => {
-            if (index === 0) {
+            if (index === 0) { //todo: export do metody
                 text += '' +
                     '\t@Id\n' +
                     `\t@Column(name = \"${column.getColumnName()}\")\n` +
                     '\t@GeneratedValue(strategy = GenerationType.IDENTITY)\n' +
                     '\tprivate Long id;\n\n';
             } else {
-                text += '' +
-                    `\t@Column(name = \"${column.getColumnName()}\"${column.checkNullable()})\n` +
-                    `\tprivate ${column.getType()} ${column.getName()}${column.getDefault()};\n\n`;
+                text += column.getClassField();
             }
         });
 
-
-        text += `\tpublic ${aClass.getClassName()} (Object object) {\n`;
-        aClass.getColumns()
-            .filter((column) => column.isConstructorField())
-            .forEach((column) => {
-                text += `\t\tthis.${column.getName()} = ${column.isHaveDefault() ? column.resolveDefaultType() : 'object.get' + column.generateGetter()};\n`;
-            });
-        text += '\t}\n\n';
+        text += aClass.printConstructor();
         text += '}';
         return text;
     }
 
-    private extractTableName(line: string): string {
+    private extractTableName(text: string): string {
         const regex = /create +table +[a-z0-9_\-]+ +/;
-        const result: RegExpMatchArray | null = line.match(regex);
+        const result: RegExpMatchArray | null = text.match(regex);
         if (result == null) {
             return '/*TODO*/';
         }
         return result[0].split(' ')[2];
     }
 
-    private getColumns(text: string[]): Column[] {
-        return text.filter((l, i) => i !== 0)
-            // .filter((line) => !line.includes('primary key'))
-            .map((line) => {
-                const lineArray: string[] = line.trimStart().split(' ');
-                console.log(lineArray);
-                const name: string = lineArray[0];
-                const type: string = this.extractType(lineArray[1]);
-                const nullable: boolean = this.checkNullable(line);
-                const defaultValue: string | boolean = this.extractDefault(line);
-                return new Column(name, type, nullable, defaultValue);
-            });
+    private getColumns(lines: RegExpMatchArray | null): JavaColumn[] {
+        if (lines === null) {
+            return [];
+        }
+        return lines.map((line) => {
+            const lineArray: string[] = line.trimStart().split(/ +/g);
+            const name: string = lineArray[0];
+            const type: string = this.extractType(lineArray[1]);
+            const nullable: boolean = this.checkNullable(line);
+            const hasDefault: string | null = this.checkDefault(line);
+            const defaultValue: string = hasDefault !== null ? hasDefault : '';
+            return new JavaColumn(name, type, nullable, hasDefault !== null, defaultValue);
+        });
     }
 
-    private extractType(type: string): string {
-        console.log('checking type: ' + type);
+    private extractType(type: string): string {//todo, przeniesienie do klasy
         if (type === undefined) {
             return '/*TODO*/';
-        } else if (type.startsWith('int')) {
+        } else if (type.startsWith('int') || type.startsWith('bigint')) {
             return 'Long';
         } else if (type.startsWith('tinyint')) {
             return 'boolean';
@@ -111,19 +105,19 @@ export default class ConverterService {
         return '/*TODO*/';
     }
 
-    private extractDefault(line: string): string | boolean {
+    private checkDefault(line: string): string | null {
         const regex = /default +[A-z0-9.,\-]+/;
         const result: RegExpMatchArray | null = line.match(regex);
-        if (result == null) {
-            return false;
-        } else {
-            console.log('checking default: ' + result.input);
-            return result[0].split(' ')[1];
+        if (result != null) {
+            // @ts-ignore
+            const splited = result.input.split(/ +/g);
+            const index = splited.indexOf('default');
+            return splited[index + 1];
         }
+        return result;
     }
 
     private checkNullable(line: string): boolean {
-        console.log('checking nullable: ' + line);
         return line.match(/not +null/) == null;
     }
 

@@ -4,4 +4,6 @@ export enum DataTypeEnum {
 
     SPRING,
 
+    PG,
+
 }

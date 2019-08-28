@@ -2,7 +2,7 @@
 
     <div class="wrapper">
         <v-radio-group @change="change" class="item" v-model="selected" row>
-            <v-radio v-for="item in values" :key="item.label" :label="item.label" :value="item.value"></v-radio>
+            <v-radio v-for="item in values" :key="item.getLabel()" :label="item.getLabel()" :value="item.getValue()"></v-radio>
         </v-radio-group>
     </div>
 
